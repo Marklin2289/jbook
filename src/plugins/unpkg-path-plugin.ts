@@ -13,7 +13,10 @@ export const unpkgPathPlugin = () => {
 
         if (args.path.includes("./") || args.path.includes("../")) {
           return {
-            path: new URL(args.path, args.importer + "/").href,
+            path: new URL(
+              args.path,
+              "https://unpkg.com" + args.resolveDir + "/"
+            ).href,
             namespace: "a",
           };
         }
@@ -30,15 +33,17 @@ export const unpkgPathPlugin = () => {
           return {
             loader: "jsx",
             contents: `
-              const message = require('nested-test-pkg');
+              const message = require('react');
               console.log(message);
             `,
           };
         }
-        const { data } = await axios.get(args.path);
+        const { data, request } = await axios.get(args.path);
+        // console.log(request);
         return {
           loader: "jsx",
           contents: data,
+          resolveDir: new URL("./", request.responseURL).pathname,
         };
       });
     },
